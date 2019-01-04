@@ -48,7 +48,11 @@ def main():
             try:
                 msi_model = parse_model(args.model)
                 if msi_model == "BACK":
-                    MSI_Keyboard = MSI_Backlight
+                    from msi_perkeyrgb.msi_keyboard import MSI_Backlight as MSI_Keyboard
+                else:
+                    from msi_perkeyrgb.msi_keyboard import MSI_Keyboard as MSI_Keyboard
+
+                    # MSI_Keyboard = MSI_Backlight
             except UnknownModelError:
                 print("Unknown MSI model : %s" % args.model)
                 sys.exit(1)
@@ -102,6 +106,7 @@ def main():
             if args.disable:
                 if msi_model == "BACK":
                     kb.set_preset("disable")
+                    kb.refresh()
                 else:
                     kb.set_color_all([0, 0, 0])
                     kb.refresh()
