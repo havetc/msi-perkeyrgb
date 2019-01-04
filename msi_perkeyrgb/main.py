@@ -4,11 +4,12 @@ import sys
 import argparse
 from msi_perkeyrgb.config import load_config, load_steady, ConfigError
 from msi_perkeyrgb.parsing import parse_model, parse_usb_id, parse_preset, UnknownModelError, UnknownIdError, UnknownPresetError
-from msi_perkeyrgb.msi_keyboard import MSI_Keyboard, AVAILABLE_MSI_KEYMAPS
+from msi_perkeyrgb.msi_keyboard import MSI_Keyboard, AVAILABLE_MSI_KEYMAPS, MSI_Backlight
 from msi_perkeyrgb.hidapi_wrapping import HIDLibraryError, HIDNotFoundError, HIDOpenError
 
 VERSION = "1.3"
 DEFAULT_ID = "1038:1122"
+BACKLIGHT_ID = "1038:1124"
 DEFAULT_MODEL = "GE63"  # Default laptop model if nothing specified
 
 
@@ -34,6 +35,7 @@ def main():
         for msi_models, _ in AVAILABLE_MSI_KEYMAPS:
             for model in msi_models:
                 print(model)
+        print("BACK for laptop GE63 backlight")
         print("\nIf your laptop is not in this list, use the closest one (with a keyboard layout as similar as possible). This tool will only work with per-key RGB models.")
 
     else:
@@ -45,13 +47,18 @@ def main():
         else:
             try:
                 msi_model = parse_model(args.model)
+                if msi_model == "BACK":
+                    MSI_Keyboard = MSI_Backlight
             except UnknownModelError:
                 print("Unknown MSI model : %s" % args.model)
                 sys.exit(1)
 
         # Parse USB vendor/product ID
         if not args.id:
-            usb_id = parse_usb_id(DEFAULT_ID)
+            if msi_model == "BACK":
+                usb_id = parse_usb_id(BACKLIGHT_ID)
+            else:
+                usb_id = parse_usb_id(DEFAULT_ID)
         else:
             try:
                 usb_id = parse_usb_id(args.id)
@@ -93,8 +100,11 @@ def main():
 
             # If user has requested disabling
             if args.disable:
-                kb.set_color_all([0, 0, 0])
-                kb.refresh()
+                if msi_model == "BACK":
+                    kb.set_preset("disable")
+                else:
+                    kb.set_color_all([0, 0, 0])
+                    kb.refresh()
 
             # If user has requested a preset
             elif args.preset:
