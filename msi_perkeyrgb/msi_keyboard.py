@@ -23,7 +23,7 @@ PRESETS_FILES = [
 class MSI_Backlight:
 
     @staticmethod
-    def get_model_presets():
+    def get_model_presets(dummy=None):
         presets_path = os.path.join(os.path.dirname(__file__), 'presets', "backlight.json")
         f = open(presets_path)
         msi_presets = json.load(f)
